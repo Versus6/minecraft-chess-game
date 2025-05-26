@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const boardElement = document.getElementById('board');
     const playerTurnElement = document.getElementById('player-turn');
     const statusElement = document.getElementById('status');
-    const newGameButton = document.getElementById('new-game-button'); // <<--- NEWGAMEBUTTON SE DEFINE AQUÍ
+    const newGameButton = document.getElementById('new-game-button');
     const capturedWhiteElement = document.getElementById('captured-white');
     const capturedBlackElement = document.getElementById('captured-black');
 
@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Variables para la funcionalidad de pantalla completa
     const fullscreenButton = document.getElementById('fullscreen-button');
     const gameContainer = document.querySelector('.game-container');
+
+    // Elemento de Audio para música de fondo
+    const backgroundMusic = document.getElementById('background-music'); // NUEVA VARIABLE
 
     // Variables del juego
     let game = new Chess();
@@ -30,13 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let aiSkillLevel = 0;
     let isAITurn = false;
 
+    // Variable para control de música
+    let musicStarted = false; // NUEVA VARIABLE
+
     // --- Inicialización de Stockfish ---
     try {
         stockfish = typeof STOCKFISH === "function" ? STOCKFISH() : new Worker('js/lib/stockfish.js');
         
         stockfish.onmessage = function(event) {
             const rawMessage = event.data || event;
-            console.log("Stockfish RAW:", rawMessage); // PARA DEPURAR EL MENSAJE ORIGINAL
+            // console.log("Stockfish RAW:", rawMessage); // Descomentar para depuración intensiva
 
             let messageString = "";
             if (typeof rawMessage === 'string') {
@@ -44,21 +50,20 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (typeof rawMessage === 'object' && rawMessage !== null && typeof rawMessage.data === 'string') {
                 messageString = rawMessage.data;
             } else if (typeof rawMessage === 'object' && rawMessage !== null) {
-                console.log("Stockfish envió un objeto, intentando convertir a string o buscar propiedad:", rawMessage);
-                // Intenta convertir a string si es un objeto simple, o busca propiedades comunes
-                // Esto es para depuración, la lógica real debe manejar el formato esperado
-                if (rawMessage.message) messageString = String(rawMessage.message); // Ejemplo si el mensaje estuviera en .message
-                else messageString = JSON.stringify(rawMessage); // Como último recurso, para ver qué es
+                // Esto es principalmente para depuración si el formato no es un string o {data: string}
+                if (rawMessage.message && typeof rawMessage.message === 'string') messageString = rawMessage.message;
+                else messageString = JSON.stringify(rawMessage); 
+                console.log("Stockfish envió un objeto complejo, convertido a:", messageString);
             } else {
-                console.error("Stockfish envió un mensaje en un formato inesperado:", rawMessage);
+                // console.error("Stockfish envió un mensaje en un formato inesperado:", rawMessage);
                 return; 
             }
             
-            console.log("Stockfish procesado como string:", messageString);
+            // console.log("Stockfish procesado como string:", messageString); // Descomentar para depuración
 
             if (messageString && typeof messageString.startsWith === 'function' && messageString.startsWith('bestmove')) {
                 const bestMove = messageString.split(' ')[1];
-                if (bestMove && bestMove !== '(none)' && bestMove.length >= 4) { // Verificación básica de validez del movimiento
+                if (bestMove && bestMove !== '(none)' && bestMove.length >= 4) { // Verificación básica
                     game.move(bestMove, { sloppy: true });
                     renderBoard();
                     updateStatus();
@@ -70,13 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (messageString && typeof messageString.startsWith === 'function') {
                 if (messageString.startsWith('uciok')) {
                     console.log("Stockfish UCI OK recibido.");
-                    stockfish.postMessage('isready'); // Enviar isready después de uciok
+                    stockfish.postMessage('isready');
                 } else if (messageString.startsWith('readyok')) {
                     console.log("Stockfish READYOK recibido.");
-                    // El motor está listo. Si es el turno de la IA al inicio, podría mover.
-                    if (isAIActive && game.turn() !== playerColor && !isAITurn) {
-                        // makeAIMove(); // Considerar si la IA debe mover si el juego ya empezó y es su turno
-                    }
                 }
                 // Puedes loguear otros mensajes para depuración:
                 // else { console.log("Stockfish (otro mensaje):", messageString); }
@@ -84,18 +85,49 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         stockfish.postMessage = stockfish.postMessage || function(msg) { stockfish.onmessage({data: msg}); };
-        stockfish.postMessage('uci'); // Inicia el motor UCI
-        // No enviar 'isready' aquí, esperar a 'uciok'
+        stockfish.postMessage('uci');
 
     } catch (e) {
         console.error("Error al inicializar Stockfish:", e);
-        if (gameModeSelect) { // Asegurarse que el elemento existe antes de modificarlo
-             alert("No se pudo cargar la IA (Stockfish). Revisa la consola para más detalles. Asegúrate que 'stockfish.js' y 'stockfish.wasm' están en 'js/lib/'. El juego continuará en modo Humano vs Humano.");
+        if (gameModeSelect) {
+             alert("No se pudo cargar la IA (Stockfish). Revisa la consola. El juego continuará en modo Humano vs Humano.");
             gameModeSelect.value = "human";
             if (aiDifficultySelectorDiv) aiDifficultySelectorDiv.style.display = 'none';
         }
         isAIActive = false;
     }
+
+    // --- Control de Música de Fondo ---
+    function playBackgroundMusic() {
+        if (backgroundMusic && backgroundMusic.paused && !musicStarted) {
+            backgroundMusic.volume = 0.2; // Volumen bajo para empezar (0.0 a 1.0)
+            backgroundMusic.play()
+                .then(() => {
+                    musicStarted = true;
+                    console.log("Música de fondo iniciada.");
+                    // Remover listeners una vez que la música ha empezado por interacción
+                    document.body.removeEventListener('click', playBackgroundMusicOnClick);
+                    document.body.removeEventListener('keydown', playBackgroundMusicOnClick);
+                })
+                .catch(error => {
+                    console.warn("Error al intentar reproducir música (puede ser bloqueo de autoplay):", error);
+                });
+        }
+    }
+
+    // Intentar reproducir música en la primera interacción del usuario
+    function playBackgroundMusicOnClick() {
+        // Esta función se llamará solo una vez gracias a { once: true } en los listeners
+        playBackgroundMusic();
+    }
+    
+    if (backgroundMusic) { // Solo añadir listeners si el elemento de audio existe
+        document.body.addEventListener('click', playBackgroundMusicOnClick, { once: true });
+        document.body.addEventListener('keydown', playBackgroundMusicOnClick, { once: true });
+    } else {
+        console.warn("Elemento de audio #background-music no encontrado.");
+    }
+    // --- Fin de Control de Música de Fondo ---
 
     // Mapeo de imágenes de piezas
     const pieceImageMap = {
@@ -152,6 +184,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function onSquareClick(algebraic) {
+        if (!musicStarted && backgroundMusic) { // Intenta iniciar música en cualquier clic de casilla si aún no ha empezado
+            playBackgroundMusic();
+        }
+
         if (game.game_over() || isAITurn) return;
         const clickedSquareElement = boardElement.querySelector(`[data-algebraic="${algebraic}"]`);
         const pieceOnClickedSquare = game.get(algebraic);
@@ -252,12 +288,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isAIActive || !stockfish || game.game_over() || game.turn() === playerColor) return;
         isAITurn = true;
         const fen = game.fen();
-        console.log(`Enviando a Stockfish: position fen ${fen}`);
+        // console.log(`Enviando a Stockfish: position fen ${fen}`);
         stockfish.postMessage(`position fen ${fen}`);
-        console.log(`Enviando a Stockfish: setoption name Skill Level value ${aiSkillLevel}`);
+        // console.log(`Enviando a Stockfish: setoption name Skill Level value ${aiSkillLevel}`);
         stockfish.postMessage(`setoption name Skill Level value ${aiSkillLevel}`);
-        console.log("Enviando a Stockfish: go movetime 1000");
-        stockfish.postMessage('go movetime 1000');
+        // console.log("Enviando a Stockfish: go movetime 1000");
+        stockfish.postMessage('go movetime 1000'); 
     }
 
     // --- Lógica de Pantalla Completa ---
@@ -295,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         validMoves = [];
         isAITurn = false;
 
-        isAIActive = gameModeSelect && gameModeSelect.value === 'ai'; // Comprobar si gameModeSelect existe
+        isAIActive = gameModeSelect && gameModeSelect.value === 'ai';
         if (isAIActive) {
             aiSkillLevel = aiDifficultySelect ? parseInt(aiDifficultySelect.value, 10) : 0;
             playerColor = 'w';
@@ -303,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (stockfish) {
                 stockfish.postMessage('ucinewgame');
                 stockfish.postMessage(`setoption name Skill Level value ${aiSkillLevel}`);
-                stockfish.postMessage('isready'); // Preguntar si está listo para el nuevo juego
+                stockfish.postMessage('isready');
             }
         } else {
             console.log("Iniciando juego Humano vs Humano.");
@@ -316,22 +352,25 @@ document.addEventListener('DOMContentLoaded', () => {
     } 
 
     // Event Listeners para controles
-    if (gameModeSelect) { // Comprobar si el elemento existe antes de añadir listener
+    if (gameModeSelect) {
         gameModeSelect.addEventListener('change', function() {
-            if (aiDifficultySelectorDiv) { // Comprobar si el div existe
+            if (aiDifficultySelectorDiv) {
                 aiDifficultySelectorDiv.style.display = this.value === 'ai' ? 'block' : 'none';
             }
-            // Opcional: Iniciar nueva partida automáticamente al cambiar modo si se desea
-            // startNewGame(); 
         });
     }
 
-    if (newGameButton) { // Comprobar si newGameButton existe
-        newGameButton.addEventListener('click', startNewGame);
+    if (newGameButton) {
+        newGameButton.addEventListener('click', () => {
+            if (!musicStarted && backgroundMusic) { // Intenta iniciar música si se hace clic en Nueva Partida
+                 playBackgroundMusic();
+            }
+            startNewGame();
+        });
     }
     
     // Configuración inicial de visibilidad del selector de dificultad
-    if (gameModeSelect && aiDifficultySelectorDiv) { // Comprobar ambos
+    if (gameModeSelect && aiDifficultySelectorDiv) {
         aiDifficultySelectorDiv.style.display = gameModeSelect.value === 'ai' ? 'block' : 'none';
     }
     
