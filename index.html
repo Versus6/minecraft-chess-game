@@ -6,14 +6,14 @@
     <title>MineChess Craft</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <!-- Incluir Stockfish.js (asegúrate que la ruta es correcta) -->
+    <!-- Asegúrate que esta ruta sea correcta según donde descargaste stockfish.js -->
     <script src="js/lib/stockfish.js"></script> 
 </head>
 <body>
     <div class="game-container">
         <img src="assets/images/ui/minecraft-chess-logo.png" alt="Minecraft Chess Logo" id="game-logo">
         
-        <div class="game-controls"> <!-- Nuevo div para controles de juego -->
+        <div class="game-controls">
             <label for="game-mode">Modo de Juego:</label>
             <select id="game-mode">
                 <option value="human">Humano vs Humano</option>
@@ -23,9 +23,9 @@
             <div id="ai-difficulty-selector" style="display:none; margin-top:10px;">
                 <label for="ai-difficulty">Dificultad IA:</label>
                 <select id="ai-difficulty">
-                    <option value="0">Principiante (Aldeano)</option> <!-- Skill Level 0-5 -->
-                    <option value="10">Medio (Esqueleto)</option>    <!-- Skill Level 10-13 -->
-                    <option value="20">Master (Dragón)</option>   <!-- Skill Level 18-20 -->
+                    <option value="0">Principiante (Aldeano)</option>
+                    <option value="10">Medio (Esqueleto)</option>
+                    <option value="20">Master (Dragón)</option>
                 </select>
             </div>
         </div>
@@ -42,6 +42,14 @@
         <div class="captured-pieces" id="captured-white">Piezas capturadas por Alex:</div>
         <div class="captured-pieces" id="captured-black">Piezas capturadas por Steve:</div>
     </div>
+
+    <!-- Elemento Audio para la música de fondo -->
+    <audio id="background-music" loop>
+        <source src="assets/audio/minecraft-chess-theme.mp3" type="audio/mpeg">
+        <!-- Opcional: Proporcionar otros formatos para mayor compatibilidad -->
+        <!-- <source src="assets/audio/minecraft-chess-theme.ogg" type="audio/ogg"> -->
+        Tu navegador no soporta el elemento de audio.
+    </audio>
 
     <script src="js/script.js"></script>
 </body>
