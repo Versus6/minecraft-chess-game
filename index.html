@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MineChess Craft</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <!-- Incluir Stockfish.js (asegúrate que la ruta es correcta) -->
+    <script src="js/lib/stockfish.js"></script> 
+</head>
+<body>
+    <div class="game-container">
+        <img src="assets/images/ui/minecraft-chess-logo.png" alt="Minecraft Chess Logo" id="game-logo">
+        
+        <div class="game-controls"> <!-- Nuevo div para controles de juego -->
+            <label for="game-mode">Modo de Juego:</label>
+            <select id="game-mode">
+                <option value="human">Humano vs Humano</option>
+                <option value="ai">Humano vs IA</option>
+            </select>
+
+            <div id="ai-difficulty-selector" style="display:none; margin-top:10px;">
+                <label for="ai-difficulty">Dificultad IA:</label>
+                <select id="ai-difficulty">
+                    <option value="0">Principiante (Aldeano)</option> <!-- Skill Level 0-5 -->
+                    <option value="10">Medio (Esqueleto)</option>    <!-- Skill Level 10-13 -->
+                    <option value="20">Master (Dragón)</option>   <!-- Skill Level 18-20 -->
+                </select>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div id="player-turn">Turno: Steve (Blancas)</div>
+            <div id="status"></div>
+            <button id="new-game-button">Nueva Partida</button>
+            <button id="fullscreen-button">Pantalla Completa</button> 
+        </div>
+        <div id="board" class="chessboard">
+            <!-- Las casillas se generarán con JavaScript -->
+        </div>
+        <div class="captured-pieces" id="captured-white">Piezas capturadas por Alex:</div>
+        <div class="captured-pieces" id="captured-black">Piezas capturadas por Steve:</div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
