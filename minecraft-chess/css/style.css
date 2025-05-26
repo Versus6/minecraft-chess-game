@@ -1,0 +1,299 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #1E1E1E; /* Un fondo general muy oscuro, casi negro */
+    color: #FFFFFF; /* Texto general blanco por defecto para el body */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.game-container {
+    text-align: center;
+    background-color: #000000; /* Fondo del contenedor del juego NEGRO */
+    color: #FFFFFF; /* Texto dentro del contenedor del juego BLANCO */
+    padding: 30px;
+    border-radius: 15px;
+    border: 2px solid #444444; /* Un borde gris oscuro para el contenedor */
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.1); /* Sombra blanca sutil */
+    max-width: 95%;
+}
+
+/* Estilo para el nuevo logo */
+#game-logo {
+    max-width: 80%; /* Ajusta según el tamaño deseado, que no exceda el contenedor */
+    height: auto; /* Mantiene la proporción */
+    margin-bottom: 25px; /* Espacio debajo del logo */
+    display: block; /* Para centrar con margin auto si es necesario */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Casillas del tablero */
+.chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 90px); 
+    grid-template-rows: repeat(8, 90px);
+    width: 720px; 
+    height: 720px;
+    border: 8px solid #555555; /* Borde del tablero gris medio */
+    margin: 30px auto;
+    box-shadow: 0 0 15px rgba(0,0,0,0.4); /* Mantenemos una sombra oscura */
+}
+
+.square {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+.square.light {
+    background-color: #FFFFFF; /* Casilla clara: BLANCO */
+}
+
+.square.dark {
+    background-color: #B0B0B0; /* Casilla oscura: GRIS CLARO/MEDIO */
+}
+
+.square.selected {
+    /* Mantenemos el resaltado amarillo, contrasta bien con blanco/gris */
+    background-color: #FFD700 !important; 
+    outline: 4px solid #333333; /* Contorno oscuro para selección */
+    transform: scale(1.03);
+    z-index: 10;
+}
+
+.square.valid-move {
+    /* Usamos un azul para los movimientos válidos, contrasta bien */
+    background-color: rgba(50, 150, 255, 0.25) !important; 
+    box-shadow: inset 0 0 0 4px rgba(50, 150, 255, 0.7);
+    border-radius: 50%;
+}
+
+.square.capture-move::after {
+    /* Mantenemos el rojo para capturas */
+    box-shadow: inset 0 0 0 4px rgba(255, 0, 0, 0.8);
+}
+
+.piece-img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain; 
+    display: block; 
+    margin: auto; 
+    pointer-events: none; 
+}
+
+.info-panel {
+    margin-bottom: 25px;
+    font-size: 1.5em;
+    color: #FFFFFF; /* Aseguramos texto blanco */
+}
+
+#player-turn { /* Ya hereda el color del game-container, pero por si acaso */
+    color: #FFFFFF;
+}
+
+#status {
+    color: #FFD700; /* Mantenemos amarillo para el status, resalta bien */
+    font-weight: bold;
+    min-height: 1.3em;
+    margin-top: 10px;
+    font-size: 1.1em;
+}
+
+button {
+    /* Cambiamos el estilo del botón para el tema oscuro */
+    background-color: #4CAF50; /* Un verde que sigue funcionando bien */
+    /* O podrías usar un gris oscuro: background-color: #333333; */
+    color: white;
+    border: 2px solid #2E7D32; /* Borde verde más oscuro */
+    /* Si usas gris: border: 2px solid #555555; */
+    padding: 15px 30px;
+    font-size: 1.3em;
+    cursor: pointer;
+    border-radius: 8px;
+    text-shadow: 1px 1px #1B5E20; /* Sombra de texto para el verde */
+    /* Si usas gris: text-shadow: 1px 1px #000; */
+    margin-top: 15px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+button:hover {
+    background-color: #66BB6A;
+    border-color: #388E3C;
+    /* Si usas gris: background-color: #444444; border-color: #666666; */
+}
+
+.captured-pieces {
+    min-height: 60px;
+    margin-top: 20px;
+    font-size: 1em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 5px;
+    background-color: rgba(255,255,255,0.05); /* Fondo muy sutil para el área de capturadas */
+    border-radius: 5px;
+    color: #FFFFFF; /* Texto (título) de piezas capturadas blanco */
+}
+.captured-piece-img {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    margin: 2px 3px;
+    background-color: rgba(255,255,255,0.1); /* Fondo sutil para cada pieza capturada */
+    border-radius: 4px;
+}
+/* Estilo para el botón de pantalla completa */
+#fullscreen-button {
+    /* Estilo base para botones de acción principales */
+    background-color: #4CAF50; /* Verde */
+    color: white;
+    border: 2px solid #2E7D32; /* Borde verde más oscuro */
+    padding: 15px 30px;
+    font-size: 1.3em;
+    cursor: pointer;
+    border-radius: 8px;
+    text-shadow: 1px 1px #1B5E20; /* Sombra de texto para el verde */
+    margin-top: 15px; /* Margen superior uniforme */
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    margin-left: 5px; /* Pequeño margen si hay varios botones */
+    margin-right: 5px;
+}
+
+button:hover {
+    background-color: #66BB6A;
+    border-color: #388E3C;
+}
+
+/* Opcional: Estilos para cuando el juego está en pantalla completa */
+/* Podemos hacer que el game-container ocupe toda la pantalla */
+body:fullscreen .game-container, /* Estándar */
+body:-webkit-full-screen .game-container, /* Chrome, Safari, Opera */
+body:-moz-full-screen .game-container, /* Firefox */
+body:-ms-fullscreen .game-container { /* IE/Edge */
+    width: 100vw;
+    height: 100vh;
+    max-width: 100%;
+    max-height: 100%;
+    padding: 10px; /* Reducir padding en pantalla completa */
+    border-radius: 0; /* Sin bordes redondeados en pantalla completa */
+    overflow-y: auto; /* Permitir scroll si el contenido es muy grande */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centrar verticalmente el contenido */
+}
+
+/* Ajustar el tablero en pantalla completa para que no sea gigantesco */
+/* y se centre con el resto */
+body:fullscreen .chessboard,
+body:-webkit-full-screen .chessboard,
+body:-moz-full-screen .chessboard,
+body:-ms-fullscreen .chessboard {
+    /* Puedes ajustar estos valores para que se vea bien en pantalla completa */
+    /* Por ejemplo, que no exceda la altura de la ventana menos los otros elementos */
+    max-width: 90vh; /* Máximo ancho relativo a la altura de la ventana */
+    max-height: 70vh; /* Máximo alto */
+    width: auto; /* Permitir que se encoja si es necesario */
+    height: auto;
+    aspect-ratio: 1 / 1; /* Mantenerlo cuadrado */
+    /* Reajustar grid-template si es necesario o dejarlo como está */
+}
+/* Media queries se mantienen igual, pero los colores base cambiados afectarán su apariencia */
+@media (max-width: 800px) {
+    .game-container {
+        padding: 15px;
+    }
+    #game-logo {
+        max-width: 70%; /* Ajustar logo para pantallas medianas */
+        margin-bottom: 20px;
+    }
+    .chessboard {
+        grid-template-columns: repeat(8, 60px); 
+        grid-template-rows: repeat(8, 60px);
+        width: 480px; 
+        height: 480px;
+        border-width: 5px;
+    }
+    .info-panel {
+        font-size: 1.2em;
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 1.1em;
+    }
+    .captured-piece-img {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+@media (max-width: 520px) {
+    .game-container {
+        padding: 10px;
+    }
+    #game-logo {
+        max-width: 90%; /* Logo ocupa más en pantallas pequeñas */
+        margin-bottom: 15px;
+    }
+    .chessboard {
+        grid-template-columns: repeat(8, 45px);
+        grid-template-rows: repeat(8, 45px);
+        width: 360px;
+        height: 360px;
+        border-width: 3px;
+    }
+     .info-panel {
+        font-size: 1em;
+    }
+    button {
+        padding: 8px 15px;
+        font-size: 1em;
+    }
+    .captured-piece-img {
+        width: 22px;
+        height: 22px;
+    }
+    .captured-pieces {
+        min-height: 35px;
+    }
+}
+/* css/style.css */
+/* ... (tus estilos existentes) ... */
+
+.game-controls {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.game-controls label {
+    margin-right: 10px;
+    font-size: 1.1em;
+}
+
+.game-controls select {
+    padding: 8px;
+    font-size: 1em;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: white;
+    min-width: 180px; /* Para que tengan un ancho decente */
+}
+
+#ai-difficulty-selector { /* Ya tiene display:none inline, pero por si acaso */
+    margin-top: 10px; /* Espacio si se muestra debajo */
+}
